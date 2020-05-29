@@ -2,7 +2,7 @@
 
 Will be released after ISSTA 2020
 
-arXiv preprint: https://arxiv.org/abs/1911.00621
+Preprint: https://andreafioraldi.github.io/assets/weizz-issta2020.pdf
 
 ### Cite
 
