@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+
+import subprocess
+import sys
+import os
+
+script_dir = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
+
+is_cxx = "++" in sys.argv[0]
+
+def cc_exec(args):
+    cc_name = "clang"
+    if is_cxx:
+        cc_name += "++"
+    if os.getenv("WEIZZ_CC_VER"):
+        cc_name += "-" + os.getenv("WEIZZ_CC_VER")
+    argv = [cc_name] + args
+    if os.getenv("WEIZZ_CC_ASAN"):
+        argv += ["-fsanitize=address"]
+    if os.getenv("WEIZZ_CC_MSAN"):
+        argv += ["-fsanitize=memory"]
+    if os.getenv("WEIZZ_CC_UBSAN"):
+        argv += [
+                  "-fsanitize=undefined",
+                  "-fsanitize-undefined-trap-on-error",
+                  "-fno-sanitize-recover=all",
+                ]
+    if os.getenv("WEIZZ_CC_32BITS"):
+        argv += ["-m32"]
+    #print("WEIZZ CC:", " ".join(argv))
+    return subprocess.run(argv)
+
+
+def common_opts():
+    sancov = "-fsanitize-coverage=trace-pc-guard"
+    if os.getenv("WEIZZ_HEAVY"):
+        sancov = "-fsanitize-coverage=trace-pc-guard,trace-cmp"
+    return [
+      "-Wno-unused-command-line-argument",
+      #"-fsanitize-coverage=trace-pc,trace-cmp,indirect-calls",
+      sancov,
+      "-mllvm",
+      "-sanitizer-coverage-level=3",
+      "-fno-inline",
+      "-fno-builtin",
+      "-fno-omit-frame-pointer",
+      "-D__NO_STRING_INLINES",
+    ]
+
+def cc_mode():
+    args = common_opts()
+    args += sys.argv[1:]
+    
+    return cc_exec(args)
+
+def ld_mode():
+    args = common_opts()
+    
+    if sys.platform == "darwin":
+        args += ["-Wl,--wrap=strcmp"]
+        args += ["-Wl,--wrap=strcasecmp"]
+        args += ["-Wl,--wrap=strncmp"]
+        args += ["-Wl,--wrap=strncasecmp"]
+        args += ["-Wl,--wrap=strstr"]
+        args += ["-Wl,--wrap=strcasestr"]
+        args += ["-Wl,--wrap=memcmp"]
+        args += ["-Wl,--wrap=bcmp"]
+        args += ["-Wl,--wrap=memmem"]
+        args += ["-Wl,--wrap=strcpy"]
+        args += ["-Wl,--wrap=ap_cstr_casecmp"]
+        args += ["-Wl,--wrap=ap_cstr_casecmpn"]
+        args += ["-Wl,--wrap=ap_strcasestr"]
+        args += ["-Wl,--wrap=apr_cstr_casecmp"]
+        args += ["-Wl,--wrap=apr_cstr_casecmpn"]
+        args += ["-Wl,--wrap=CRYPTO_memcmp"]
+        args += ["-Wl,--wrap=OPENSSL_memcmp"]
+        args += ["-Wl,--wrap=OPENSSL_strcasecmp"]
+        args += ["-Wl,--wrap=OPENSSL_strncasecmp"]
+        args += ["-Wl,--wrap=memcmpct"]
+        args += ["-Wl,--wrap=xmlStrncmp"]
+        args += ["-Wl,--wrap=xmlStrcmp"]
+        args += ["-Wl,--wrap=xmlStrEqual"]
+        args += ["-Wl,--wrap=xmlStrcasecmp"]
+        args += ["-Wl,--wrap=xmlStrncasecmp"]
+        args += ["-Wl,--wrap=xmlStrstr"]
+        args += ["-Wl,--wrap=xmlStrcasestr"]
+        args += ["-Wl,--wrap=memcmp_const_time"]
+        args += ["-Wl,--wrap=strcsequal"]
+        args += ["-Wl,-U,_LIBWEIZZ_module_instrument"]
+        args += ["-Wl,-U,_LIBWEIZZ_module_memorycmp"]
+    else:
+        args += ["-Wl,-u,LIBWEIZZ_module_instrument"]
+        args += ["-Wl,-u,LIBWEIZZ_module_memorycmp"]
+    
+    args += sys.argv[1:]
+    args += [os.path.join(script_dir, "weizz-llvm-rt.a")]
+    
+    return cc_exec(args)
+
+def is_ld_mode():
+    return not ("--version" in sys.argv or "--target-help" in sys.argv or
+                "-c" in sys.argv or "-E" in sys.argv or "-S" in sys.argv or
+                "-shared" in sys.argv)
+
+print("\x1b[0;36m" + os.path.basename(sys.argv[0]) + " 1.0a\x1b[0m by <andreafioraldi@gmail.com>")
+
+if len(sys.argv) <= 1:
+  cc_exec(sys.argv[1:])
+elif is_ld_mode():
+    ld_mode()
+else:
+    cc_mode()
+

@@ -1,10 +1,75 @@
-# Future home of the Weizz fuzzer source code
+```
+  _      __    _          ____                   
+ | | /| / /__ (_)_____   / __/_ ________ ___ ____
+ | |/ |/ / -_) /_ /_ /  / _// // /_ /_ // -_) __/
+ |__/|__/\__/_//__/__/ /_/  \_,_//__/__/\__/_/   
+                                               v1.0
 
-Will be released after ISSTA 2020
+  Written and maintained by Andrea Fioraldi <andreafioraldi@gmail.com>
+  Based on American Fuzzy Lop by Michal Zalewski
+
+```
+
+## Prepare and Build
+
+Download Weizz with:
+
+```
+$ git clone https://github.com/andreafioraldi/weizz
+```
+
+Build the fuzzer, the QEMU and the LLVM tracers with:
+
+```
+$ make
+```
+
+## Usage
+
+The command line usage of Weizz is similar to AFL.
+
+```
+$ ./prepare_sys.sh # needed only one time each boot
+$ ./weizz -i seeds_dir -o findings_dir [ options ] -- ./program [ args... ]
+```
+
+Use `weizz --help` to show the all commands.
+
+Note that the llvm-tracer is experimental and lacks of the checksums pacthing
+and context-sensitive coverage.
+
+## Example
+
+Download the lastest snapshot of the FFmpeg source.
+
+```
+$ wget https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2
+$ tar xvf ffmpeg-snapshot.tar.bz2
+```
+
+Build it without instrumentation:
+
+```
+$ cd ffmpeg
+$ ./configure
+$ make
+```
+
+Fuzz FFmpeg with Weizz in QEMU mode enabling the structural mutations (-w -h)
+and a limit of 8k for each testcase to enter in getdeps:
+
+```
+$ mkdir INPUTS
+$ cp /path/to/weizz/testcases/5.7kb.avi INPUTS/
+$ WEIZZ_CTX_SENSITIVE=1 /path/to/weizz/weizz -i INPUTS -o OUTPUT \
+  -d -w -h -Q -L 8k -- ./ffmpeg -y -i @@ -c:v mpeg4 -c:a out.mp4
+```
+
+![](assets/screenshot_ffmpeg.png)
+
+## Cite
 
 Preprint: https://andreafioraldi.github.io/assets/weizz-issta2020.pdf
-
-### Cite
 
 ```
 @inproceedings{weizz-ISSTA20,
@@ -20,3 +85,4 @@ Preprint: https://andreafioraldi.github.io/assets/weizz-issta2020.pdf
     series = {ISSTA 2020}
 }
 ```
+

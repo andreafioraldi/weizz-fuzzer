@@ -1,0 +1,38 @@
+=================
+Weizz QEMU Tracer
+=================
+
+  Written and maintained by Andrea Fioraldi <andreafioraldi@gmail.com>
+  Based on QEMU, a trademark of Fabrice Bellard.
+
+1) TL;DR
+--------
+
+This project adds the instrumentation code needed by the weizz fuzzer to QEMU.
+The code is for only x86 targets and is tested only on x86_64.
+
+2) Build
+--------
+
+$ ./weizz_build.sh
+
+This script will build two version of QEMU.
+
+ - Heavy, the version with the cmp instrumentation
+ - Light, the version with coverage instrumentation
+
+The binaries are named as heavy-weizz-qemu and light-weizz-qemu.
+
+3) Modified files
+-----------------
+
+Respect to the vanilla QEMU, you can find the weizz code in the following files:
+
+  - include/weizz-qemu.h (added)
+  - tcg/tcg.c
+  - accel/tcg/translate-all.c
+  - accel/tcg/cpu-exec.c
+  - target/i386/translate.c
+  - linux-user/elfload.c
+  - linux-user/syscall.c
+
