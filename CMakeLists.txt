@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 3.0)
 
 project(weizz C)
 
-add_compile_options(-g -O0)
-#add_compile_options(-flto -O3)
+#add_compile_options(-g -O0)
+add_compile_options(-flto -O3 -march=native)
 
 set(SOURCES
   src/bitmap.c

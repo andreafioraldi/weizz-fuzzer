@@ -1,0 +1,11 @@
+build/
+*.o
+*.a
+weizz
+weizz_*
+asan.sh
+weizz_asan
+weizz-showmap
+weizz-qemu
+qemu-tracer/roms/vgabios/config.mak
+qemu-tracer/roms/seabios/config.mak
