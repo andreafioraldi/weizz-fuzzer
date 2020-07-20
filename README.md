@@ -71,6 +71,8 @@ $ WEIZZ_CTX_SENSITIVE=1 /path/to/weizz/weizz -i INPUTS -o OUTPUT \
 
 Preprint: https://andreafioraldi.github.io/assets/weizz-issta2020.pdf
 
+Presentation video: https://www.youtube.com/watch?v=67Bj1AaEECE
+
 ```
 @inproceedings{weizz-ISSTA20,
     author = {Fioraldi, Andrea and D'Elia, Daniele Cono and Coppa, Emilio },
