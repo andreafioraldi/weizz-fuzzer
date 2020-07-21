@@ -14,7 +14,7 @@ The code is for only x86 targets and is tested only on x86_64.
 2) Build
 --------
 
-$ ./weizz_build.sh
+$ ./build-weizz.sh
 
 This script will build two version of QEMU.
 
