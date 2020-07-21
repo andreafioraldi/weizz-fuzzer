@@ -181,6 +181,14 @@ int __weizz_persistent_loop(unsigned int max_cnt) {
   static u32 cycle_cnt;
 
   if (first_pass) {
+  
+    if (is_persistent) {
+
+      memset(light_map, 0, MAP_SIZE);
+      memset(heavy_map, 0, sizeof(struct cmp_map));
+      light_map[0] = 1;
+      //prev_loc = 0;
+    }
 
     cycle_cnt  = max_cnt;
     first_pass = 0;
@@ -192,7 +200,7 @@ int __weizz_persistent_loop(unsigned int max_cnt) {
     raise(SIGSTOP);
 
     light_map[0] = 1;
-    // prev_loc = 0;
+    //prev_loc = 0;
 
     return 1;
   }
@@ -216,7 +224,11 @@ void __weizz_manual_init(void) {
 
 __attribute__((constructor)) void __weizz_auto_init(void) {
     
-    __weizz_manual_init();
+  is_persistent = !!getenv(PERSIST_ENV_VAR);
+
+  if (getenv(DEFER_ENV_VAR)) return;
+
+  __weizz_manual_init();
 
 }
 

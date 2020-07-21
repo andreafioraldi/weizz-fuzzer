@@ -2,6 +2,7 @@
 #define _WEIZZ_LLVM_H
 
 #include "../include/weizz-shared.h"
+#include "../include/config.h"
 
 #define PERSISTENT_DEFAULT_MAX_CNT 10000
 

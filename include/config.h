@@ -278,7 +278,7 @@
 
 #define PATCH_SHM_ENV_VAR "__WEIZZ_PATCH_SHM_ID"
 
-// TODO implement deferred mode
+#define PERSIST_ENV_VAR "__WEIZZ_PERSISTENT"
 #define DEFER_ENV_VAR "__WEIZZ_DEFER_FORKSRV"
 
 /* In-code signatures for deferred and persistent mode. */

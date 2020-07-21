@@ -14,6 +14,10 @@ def cc_exec(args):
         cc_name += "++"
     if os.getenv("WEIZZ_CC_VER"):
         cc_name += "-" + os.getenv("WEIZZ_CC_VER")
+    if os.getenv("WEIZZ_C_COMPILER") and not is_cxx:
+        cc_name = os.getenv("WEIZZ_C_COMPILER")
+    if os.getenv("WEIZZ_CXX_COMPILER") and is_cxx:
+        cc_name = os.getenv("WEIZZ_CXX_COMPILER")
     argv = [cc_name] + args
     if os.getenv("WEIZZ_CC_ASAN"):
         argv += ["-fsanitize=address"]
@@ -36,6 +40,18 @@ def common_opts():
     if os.getenv("WEIZZ_HEAVY"):
         sancov = "-fsanitize-coverage=trace-pc-guard,trace-cmp"
     return [
+      "-D__WEIZZ_INIT()=" + \
+      "do { static volatile char *_A __attribute__((used)); " + \
+      " _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"; " + \
+      "__attribute__((visibility(\"default\"))) " + \
+      "void _I(void) __asm__(\"__weizz_manual_init\"); " + \
+      "_I(); } while (0)",
+      "-D__WEIZZ_LOOP(_A)=" + \
+      "({ static volatile char *_B __attribute__((used)); " + \
+      " _B = (char*)\"##SIG_AFL_PERSISTENT##\"; " + \
+      "__attribute__((visibility(\"default\"))) " + \
+      "int _L(unsigned int) __asm__(\"__weizz_persistent_loop\"); " + \
+      "_L(_A); })",
       "-Wno-unused-command-line-argument",
       #"-fsanitize-coverage=trace-pc,trace-cmp,indirect-calls",
       sancov,

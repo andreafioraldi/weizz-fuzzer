@@ -387,6 +387,24 @@ void check_binary(u8 *fname) {
       memmem(f_data, f_len, "__msan_init", 11))
     uses_asan = 1;
 
+  /* Detect persistent & deferred init signatures in the binary. */
+
+  if (memmem(f_data, f_len, PERSIST_SIG, strlen(PERSIST_SIG) + 1)) {
+
+    OKF(cPIN "Persistent mode binary detected.");
+    setenv(PERSIST_ENV_VAR, "1", 1);
+    //persistent_mode = 1;
+
+  }
+
+  if (memmem(f_data, f_len, DEFER_SIG, strlen(DEFER_SIG) + 1)) {
+
+    OKF(cPIN "Deferred forkserver binary detected.");
+    setenv(DEFER_ENV_VAR, "1", 1);
+    deferred_mode = 1;
+
+  }
+
   if (munmap(f_data, f_len)) PFATAL("unmap() failed");
 
 }
