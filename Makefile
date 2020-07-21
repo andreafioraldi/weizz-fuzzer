@@ -8,7 +8,7 @@ fuzzer:
 	cp build/weizz-* .
 
 qemu:
-	cd qemu-tracer && ./weizz_build.sh
+	cd qemu-tracer && ./build-weizz.sh
 
 clean:
 	rm -rf build weizz-qemu weizz-showmap
