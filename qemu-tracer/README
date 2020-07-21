@@ -16,12 +16,7 @@ The code is for only x86 targets and is tested only on x86_64.
 
 $ ./build-weizz.sh
 
-This script will build two version of QEMU.
-
- - Heavy, the version with the cmp instrumentation
- - Light, the version with coverage instrumentation
-
-The binaries are named as heavy-weizz-qemu and light-weizz-qemu.
+The produced binary is ../weizz-qemu
 
 3) Modified files
 -----------------
