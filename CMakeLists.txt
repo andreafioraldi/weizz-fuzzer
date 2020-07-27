@@ -3,7 +3,8 @@ cmake_minimum_required (VERSION 3.0)
 project(weizz C)
 
 #add_compile_options(-g -O0)
-add_compile_options(-Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-label -Wno-unused-variable -Wno-parentheses -Wno-pointer-sign -flto -O3 -march=native)
+add_compile_options(-Wno-return-type -Wno-unused-function -Wno-unused-label -Wno-unused-variable -Wno-parentheses -Wno-pointer-sign -flto -O3 -march=native)
+link_libraries(-flto)
 
 set(SOURCES
   src/bitmap.c
