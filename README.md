@@ -15,7 +15,7 @@
 Download Weizz with:
 
 ```
-$ git clone https://github.com/andreafioraldi/weizz
+$ git clone https://github.com/andreafioraldi/weizz-fuzzer
 ```
 
 Build the fuzzer, the QEMU and the LLVM tracers with:
