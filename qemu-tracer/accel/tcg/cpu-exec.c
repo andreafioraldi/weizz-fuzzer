@@ -57,6 +57,8 @@ int ctx_sensitive;
 __thread abi_ulong prev_loc;
 __thread size_t cmp_counter;
 
+unsigned int weizz_inst_rms = MAP_SIZE;
+
 abi_ulong    weizz_persistent_addr, weizz_persistent_ret_addr;
 unsigned int weizz_persistent_cnt;
 unsigned char is_persistent;
@@ -296,6 +298,21 @@ static void weizz_initialize(CPUState *cpu)
 	      }
 
 	      pmparser_free(maps);
+    }
+
+    char* inst_r = getenv("WEIZZ_INST_RATIO");
+
+    if (inst_r) {
+
+      unsigned int r;
+
+      r = atoi(inst_r);
+
+      if (r > 100) r = 100;
+      if (!r) r = 1;
+
+      weizz_inst_rms = MAP_SIZE * r / 100;
+
     }
 
     //fprintf(stderr, "weizz_tgt_lib_start: %p\nweizz_tgt_lib_end: %p\n\n", weizz_tgt_lib_start, weizz_tgt_lib_end);

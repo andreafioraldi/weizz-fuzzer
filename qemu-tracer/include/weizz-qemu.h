@@ -43,6 +43,8 @@ extern int ctx_sensitive;
 
 extern __thread abi_ulong prev_loc;
 
+extern unsigned int weizz_inst_rms;
+
 extern abi_ulong     weizz_persistent_addr, weizz_persistent_ret_addr;
 extern unsigned int  weizz_persistent_cnt;
 extern unsigned char is_persistent;

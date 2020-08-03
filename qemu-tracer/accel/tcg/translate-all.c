@@ -80,6 +80,8 @@ void weizz_gen_trace(target_ulong cur_loc)
     
     cur_loc = (cur_loc >> 4) ^ (cur_loc << 8);
     cur_loc &= MAP_SIZE - 1;
+    
+    if (cur_loc >= weizz_inst_rms) return;
   
     TCGTemp *args[1] = { tcgv_ptr_temp( tcg_const_tl(cur_loc) ) };
     tcg_gen_weizz_callN(weizz_log_br, NULL, 1, args);
