@@ -1459,6 +1459,166 @@ u8 weizz_cmp_extend_encoding(struct cmp_header* h, u64 pattern, u64 repl, u32 id
 
 }
 
+u8 weizz_rtn_extend_encoding(struct cmp_header *h, u8 *pattern, u8 *repl,
+                                    u32 idx, u8 *buf, u32 len, u8 *status) {
+
+  u32 i;
+  u32 its_len = MIN(32, len - idx);
+
+  u8 save[32];
+  memcpy(save, &buf[idx], its_len);
+
+  *status = 0;
+
+  for (i = 0; i < its_len; ++i) {
+
+    if (pattern[i] != buf[idx + i] || *status == 1) {
+
+      break;
+
+    }
+
+    buf[idx + i] = repl[i];
+
+    if (unlikely(weizz_perform_fuzz(buf, len, status))) { return 1; }
+
+  }
+
+  memcpy(&buf[idx], save, i);
+  return 0;
+
+}
+
+u8 weizz_rtn_fuzz(u32 key, u8 *buf, u32 len) {
+
+  if (skip_surgical ||
+      (pass_stats[key].total && (UR(pass_stats[key].total) >=
+       pass_stats[key].failed || pass_stats[key].total == 255)))
+    return 0;
+
+  u8 r = 1;
+  static u8 tmp[32];
+
+  struct cmp_header *h = &orig_cmp_map.headers[key];
+  u32 i, j, idx;
+
+  u32 loggeds = h->hits;
+  if (h->hits > CMP_MAP_RTN_H) { loggeds = CMP_MAP_RTN_H; }
+
+  u8 status = 0;
+  // opt not in the paper
+  u32 fails = 0;
+  u8  found_one = 0;
+  
+  sprintf(tmp, "rtn %d/%d", sorted_cmps_idx, sorted_cmps_len);
+  stage_short = "rtn";
+  stage_name = tmp;
+  
+  stage_max = loggeds;
+
+  for (i = 0; i < loggeds; ++i) {
+  
+    stage_cur = i;
+
+    fails = 0;
+
+    struct cmpfn_operands *o =
+        &((struct cmpfn_operands *)&orig_cmp_map.log[key])[i];
+
+    // opt not in the paper
+    for (j = 0; j < i; ++j) {
+
+      if (!memcmp(&((struct cmpfn_operands *)&orig_cmp_map.log[key])[j], o,
+                  sizeof(struct cmpfn_operands))) {
+ 
+        goto rtn_fuzz_next_iter;
+
+      }
+
+    }
+
+    for (idx = 0; idx < len && fails < 8; ++idx) {
+
+      if (unlikely(weizz_rtn_extend_encoding(h, o->v0, o->v1, idx, buf, len, &status))) {
+
+        goto exit_weizz_rtn_fuzz;
+
+      }
+
+      if (status == 2) {
+
+        ++fails;
+
+      } else if (status == 1) {
+
+        break;
+
+      }
+
+      if (unlikely(weizz_rtn_extend_encoding(h, o->v1, o->v0, idx, buf, len, &status))) {
+
+        goto exit_weizz_rtn_fuzz;
+
+      }
+
+      if (status == 2) {
+
+        ++fails;
+
+      } else if (status == 1) {
+
+        break;
+
+      }
+
+    }
+    
+    if (status == 1) { found_one = 1; }
+
+    // If failed, add to dictionary
+    if (fails == 8) {
+
+      if (pass_stats[key].total == 0) {
+
+        maybe_add_auto(o->v0, SHAPE_BYTES(h->shape));
+        maybe_add_auto(o->v1, SHAPE_BYTES(h->shape));
+
+      }
+
+    }
+
+  rtn_fuzz_next_iter:;
+
+  }
+
+  if (!found_one && pass_stats[key].failed < 0xff)
+    pass_stats[key].failed++;
+  if (pass_stats[key].total < 0xff)
+    pass_stats[key].total++;
+
+  r = 0;
+
+exit_weizz_rtn_fuzz:
+
+  for (i = 0; i < loggeds; ++i) {
+  
+    if (DEPS_EXISTS(key, i)) {
+
+      u8 *deps_bitvec = DEPS_GET(key, i);
+      DEPS_GET(key, i) = NULL;
+      ck_free(deps_bitvec);
+    
+    }
+
+  }
+
+  return r;
+
+  return 0;
+
+}
+
+
 u8 weizz_cmp_fuzz(u32 perf_score, u32 key, u8 *buf, u32 len, struct tags_info *ti, u8* bruted_bits, u16* checksum_coverage, u8 is_i2s, u8 is_checksum) {
 
   u8 r = 1;
@@ -1469,13 +1629,16 @@ u8 weizz_cmp_fuzz(u32 perf_score, u32 key, u8 *buf, u32 len, struct tags_info *t
   struct cmp_header* h = &orig_cmp_map.headers[key];
   u32                i, j, idx;
 
+  if (h->type == CMP_TYPE_RTN)
+    return weizz_rtn_fuzz(key, buf, len);
+  
+  if (skip_surgical) skip_cmp = 1;
+  
   u32 loggeds = h->hits;
   if (h->hits > CMP_MAP_H) loggeds = CMP_MAP_H;
 
   if (pass_stats[key].total && (UR(pass_stats[key].total) >= pass_stats[key].failed || pass_stats[key].total == 255))
     skip_cmp = 1;
-
-  if (skip_surgical) skip_cmp = 1;
 
   u8 found = 0;
 
