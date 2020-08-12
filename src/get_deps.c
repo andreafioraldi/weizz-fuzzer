@@ -1521,70 +1521,68 @@ u8 weizz_rtn_fuzz(u32 key, u8 *buf, u32 len) {
     stage_cur = i;
 
     fails = 0;
-
-    struct cmpfn_operands *o =
-        &((struct cmpfn_operands *)&orig_cmp_map.log[key])[i];
-
-    // opt not in the paper
-    for (j = 0; j < i; ++j) {
-
-      if (!memcmp(&((struct cmpfn_operands *)&orig_cmp_map.log[key])[j], o,
-                  sizeof(struct cmpfn_operands))) {
- 
-        goto rtn_fuzz_next_iter;
-
-      }
-
-    }
-
-    for (idx = 0; idx < len && fails < 8; ++idx) {
-
-      if (unlikely(weizz_rtn_extend_encoding(h, o->v0, o->v1, idx, buf, len, &status))) {
-
-        goto exit_weizz_rtn_fuzz;
-
-      }
-
-      if (status == 2) {
-
-        ++fails;
-
-      } else if (status == 1) {
-
-        break;
-
-      }
-
-      if (unlikely(weizz_rtn_extend_encoding(h, o->v1, o->v0, idx, buf, len, &status))) {
-
-        goto exit_weizz_rtn_fuzz;
-
-      }
-
-      if (status == 2) {
-
-        ++fails;
-
-      } else if (status == 1) {
-
-        break;
-
-      }
-
-    }
     
-    if (status == 1) { found_one = 1; }
+    if (DEPS_EXISTS(key, i)) {
 
-    // If failed, add to dictionary
-    if (fails == 8) {
+      u8 *deps_bitvec = DEPS_GET(key, i);
 
-      if (pass_stats[key].total == 0) {
+      struct cmpfn_operands *o =
+          &((struct cmpfn_operands *)&orig_cmp_map.log[key])[i];
 
-        maybe_add_auto(o->v0, SHAPE_BYTES(h->shape));
-        maybe_add_auto(o->v1, SHAPE_BYTES(h->shape));
+      // opt not in the paper
+      for (j = 0; j < i; ++j) {
+
+        if (!memcmp(&((struct cmpfn_operands *)&orig_cmp_map.log[key])[j], o,
+                    sizeof(struct cmpfn_operands))) {
+   
+          goto rtn_fuzz_next_iter;
+
+        }
 
       }
 
+      for (idx = 0; idx < len && fails < 8; ++idx) {
+
+        if (V0_HASDEP(deps_bitvec, idx)) {
+
+          status = 0;
+          if (unlikely(weizz_rtn_extend_encoding(h, o->v0, o->v1, idx, buf, len, &status)))
+            goto exit_weizz_rtn_fuzz;
+          if (status == 2)
+            ++fails;
+          else if (status == 1)
+            break;
+
+        }
+
+        if (V1_HASDEP(deps_bitvec, idx)) {
+
+          status = 0;
+          if (unlikely(weizz_rtn_extend_encoding(h, o->v1, o->v0, idx, buf, len, &status)))
+            goto exit_weizz_rtn_fuzz;
+          if (status == 2)
+            ++fails;
+          else if (status == 1)
+            break;
+          
+        }
+
+      }
+      
+      if (status == 1) { found_one = 1; }
+
+      // If failed, add to dictionary
+      if (fails == 8) {
+
+        if (pass_stats[key].total == 0) {
+
+          maybe_add_auto(o->v0, SHAPE_BYTES(h->shape));
+          maybe_add_auto(o->v1, SHAPE_BYTES(h->shape));
+
+        }
+
+      }
+      
     }
 
   rtn_fuzz_next_iter:;
