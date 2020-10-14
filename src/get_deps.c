@@ -553,7 +553,7 @@ u8 place_tags(u32 cmp_id, u32 len, u8* deps_bitvec, struct tags_info* ti, u8 is_
 
     if (V0_HASDEP(deps_bitvec, i)) {
 
-      if (f_v0_i < 0) f_v1_i = i;
+      if (f_v0_i < 0) f_v0_i = i;
       ++v0_dep_bytes_num;
       ++dep_bytes_num;
 
@@ -581,6 +581,10 @@ u8 place_tags(u32 cmp_id, u32 len, u8* deps_bitvec, struct tags_info* ti, u8 is_
       ++dep_bytes_num;
 
     } else {
+    
+      if (f_v0_i >= 0)
+        v0_near_bytes_num = MAX(i-f_v0_i, v0_near_bytes_num);
+      f_v0_i = -1;
 
       if (f_v1_i >= 0)
         v1_near_bytes_num = MAX(i-f_v1_i, v1_near_bytes_num);
