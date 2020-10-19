@@ -10,6 +10,16 @@
 
 ```
 
+## What
+
+*Weizz* is a fuzzer implementing a technique to automatically apply structural mutations without an input format model. It targets unknown chunk-based binary formats, so it is not a general purpose fuzzer.
+
+The main idea is that as comparison instructions can be used to bypass fuzzing roadblocks (e.g. [Redqueen](https://github.com/RUB-SysSec/redqueen)), maybe we can use them too to collect insights about the parsed input format.
+
+So the Weizz technique reason about comparisons for both roadblocks bypassing and structural mutations. Comparisons are used to guess input fields and other metadata collected during the tracing, like the timestamp of a comparison, are used to guess an approximate structure of the chunks on-the-fly while mutating.
+
+The structural mutations are inspired by [AFLSmart](https://github.com/RUB-SysSec/redqueen).
+
 ## Prepare and Build
 
 Download Weizz with:
