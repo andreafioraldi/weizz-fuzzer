@@ -18,7 +18,7 @@ The main idea is that as comparison instructions can be used to bypass fuzzing r
 
 So the Weizz technique reason about comparisons for both roadblocks bypassing and structural mutations. Comparisons are used to guess input fields and other metadata collected during the tracing, like the timestamp of a comparison, are used to guess an approximate structure of the chunks on-the-fly while mutating.
 
-The structural mutations are inspired by [AFLSmart](https://github.com/RUB-SysSec/redqueen).
+The structural mutations are inspired by [AFLSmart](https://github.com/aflsmart/aflsmart).
 
 ## Prepare and Build
 
